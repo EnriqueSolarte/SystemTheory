@@ -17,10 +17,11 @@ from algo import EpislonGreedy, UCB, Gradient
 from utils import plot
 
 # function map
-FUNCTION_MAP = {'e-Greedy': EpislonGreedy, 
+FUNCTION_MAP = {'e-Greedy': EpislonGreedy,
                 'UCB': UCB,
                 'grad': Gradient}
- 
+
+
 # train function 
 def train(args, env, algo):
     reward = np.zeros(args.max_timestep)
@@ -40,26 +41,26 @@ def train(args, env, algo):
 
             # get reward from env
             r = mab.step(a)
-
             # update
             agent.update(a, r)
 
             # append to result
             reward[t] += r
-    
+
     avg_reward = reward / args.num_exp
     return avg_reward
+
 
 if __name__ == '__main__':
     # Argument parser
     parser = argparse.ArgumentParser()
-    parser.add_argument("-nb", "--num_of_bandits", type=int, 
+    parser.add_argument("-nb", "--num_of_bandits", type=int,
                         default=50, help="number of bandits")
     parser.add_argument("-algo", "--algo",
-                        default="e-Greedy", choices=FUNCTION_MAP.keys(),
+                        default="grad", choices=FUNCTION_MAP.keys(),
                         help="Algorithm to use")
     parser.add_argument("-epislon", "--epislon", type=float,
-                        default=0.1, help="epislon for epislon-greedy algorithm")
+                        default=0.4, help="epislon for epislon-greedy algorithm")
     parser.add_argument("-c", "--c", type=float,
                         default=1, help="c for UCB")
     parser.add_argument("-max_timestep", "--max_timestep", type=int,
@@ -67,21 +68,21 @@ if __name__ == '__main__':
     parser.add_argument("-num_exp", "--num_exp", type=int,
                         default=100, help="Total experiments to run")
     parser.add_argument("-plot", "--plot", action='store_true',
-                        help='plot the results')
+                        default=False, help='plot the results')
     parser.add_argument("-runAll", "--runAll", action='store_true',
-                        help='run all three algos')
+                        default=True, help='run all three algos')
     args = parser.parse_args()
 
     # start training
     avg_reward = train(args, Gaussian_MAB, FUNCTION_MAP[args.algo])
     if args.plot:
         plot(np.expand_dims(avg_reward, axis=0), [args.algo])
-    
+
     ##############################################################################
     # After you implement all the method, uncomment this part, and then you can  #  
     # use the flag: --runAll to show all the results in a single figure.         #
     ##############################################################################
-    """
+
     if args.runAll:
         _all = ['e-Greedy', 'UCB', 'grad']
         avg_reward = np.zeros([len(_all), args.max_timestep])
@@ -89,4 +90,3 @@ if __name__ == '__main__':
             idx = _all.index(algo)
             avg_reward[idx] = train(args, Gaussian_MAB, FUNCTION_MAP[algo])
         plot(avg_reward, _all)
-    """

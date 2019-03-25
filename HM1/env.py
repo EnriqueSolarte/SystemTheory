@@ -11,6 +11,7 @@ Author:
 import random
 import numpy as np
 
+
 class Bernoulli_MAB(object):
     def __init__(self, NumofBandits=10):
         """
@@ -70,4 +71,3 @@ class Gaussian_MAB(object):
 
         # return reward via sampling from normal distribution
         return np.random.normal(self.MeanList[action], self.sigma, 1)[0]
-

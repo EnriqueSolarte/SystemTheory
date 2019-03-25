@@ -4,17 +4,19 @@ Todo:
 """
 import numpy as np
 
+
 class EpislonGreedy(object):
     """
     Implementation of epislon-greedy algorithm.
     """
-    def __init__(self, NumofBandits=10, epislon=0.1):
+
+    def __init__(self, NumofBandits=10, epsilon=0.1):
         """
         Initialize the class.
         Step 1: Initialize your Q-table and counter for each action
         """
-        assert (0. <= epislon <= 1.0), "[ERROR] Epislon should be in range [0,1]"
-        self._epislon = epislon
+        assert (0. <= epsilon <= 1.0), "[ERROR] Epsilon should be in range [0,1]"
+        self._epsilon = epsilon
         self._nb = NumofBandits
         self._Q = np.zeros(self._nb, dtype=float)
         self._action_N = np.zeros(self._nb, dtype=int)
@@ -23,23 +25,27 @@ class EpislonGreedy(object):
         """
         Step 2: update your Q-table. No need to return any result.
         """
-        ################### Your code here #######################
-        raise NotImplementedError('[EpislonGreedy] update function NOT IMPLEMENTED')
-        ##########################################################
+        self._Q[action] = self._Q[action] + (1 / len(self._Q)) * (immi_reward - self._Q[action])
 
     def act(self, t):
         """
-        Step 3: Choose the action via greedy or explore. 
+        Step 3: Choose the action via greedy or explore.
         Return: action selection
         """
-        ################### Your code here #######################
-        raise NotImplementedError('[EpislonGreedy] act function NOT IMPLEMENTED')
-        ##########################################################
+
+        if self._epsilon > np.random.rand():
+            a_max = np.random.randint(0, self._Q.size)
+        else:
+            a_max = np.argmax(self._Q)
+
+        return a_max
+
 
 class UCB(object):
     """
     Implementation of upper confidence bound.
     """
+
     def __init__(self, NumofBandits=10, c=2):
         """
         Initailize the class.
@@ -48,51 +54,64 @@ class UCB(object):
         self._nb = NumofBandits
         self._c = c
         self._Q = np.zeros(self._nb, dtype=float)
-        self._action_N = np.zeros(self._nb, dtype=int)
+        self._action_N = np.ones(self._nb, dtype=int)
 
     def update(self, action, immi_reward):
         """
         Step 2: update your Q-table
         """
-        ################### Your code here #######################
-        raise NotImplementedError('[UCB] update function NOT IMPLEMENTED')
-        ##########################################################
+        self._Q[action] = self._Q[action] + (1 / len(self._Q)) * (immi_reward - self._Q[action])
 
     def act(self, t):
         """
         Step 3: use UCB action selection. We'll pull all arms once first!
         HINT: Check out p.27, equation 2.8
         """
-        ################### Your code here #######################
-        raise NotImplementedError('[UCB] act function NOT IMPLEMENTED')
-        ##########################################################
+        const = self._c * np.sqrt(np.log(t + 1))
+        n_action = np.sqrt(self._action_N)
+
+        q_iter = self._Q + np.divide(const, n_action)
+        a_max = np.argmax(self._Q + q_iter)
+        self._action_N[a_max] += 1
+        return a_max
+
 
 class Gradient(object):
     """
     Implementation of your gradient-based method
     """
-    def __init__(self, NumofBandits=10, epislon=0.1):
+
+    def __init__(self, NumofBandits=10, lda=0.5):
         """
         Initailize the class.
         Step 1: Initialize your Q-table and counter for each action
         """
         self._nb = NumofBandits
         self._Q = np.zeros(self._nb, dtype=float)
-        self._action_N = np.zeros(self._nb, dtype=int)
+        self._action_N = np.ones(self._nb, dtype=int)
+        assert (0. <= lda <= 1.0), "[ERROR] Epsilon should be in range [0,1]"
+        self._lda = lda
 
     def update(self, action, immi_reward):
         """
         Step 2: update your Q-table
         """
-        ################### Your code here #######################
-        raise NotImplementedError('[gradient] update function NOT IMPLEMENTED')
-        ##########################################################
+        self._Q[action] = self._Q[action] + (1 / len(self._Q)) * (immi_reward - self._Q[action])
+
+        q_mean = np.mean(self._Q)
+
+        aux_action = self._action_N[action]
+        self._action_N = self._action_N - self._lda * (self._Q[action] - q_mean) * self._action_N
+        self._action_N[action] = aux_action + self._lda * (self._Q[action] - q_mean) * (1 - aux_action)
 
     def act(self, t):
         """
         Step 3: select action with gradient-based method
         HINT: Check out p.28, eq 2.9 in your textbook
         """
-        ################### Your code here #######################
-        raise NotImplementedError('[gradient] act function NOT IMPLEMENTED')
-        ##########################################################
+
+        self._action_N = np.exp(self._action_N) / np.sum(np.exp(self._action_N))
+        a_max = np.argmax(self._action_N)
+
+
+        return a_max
