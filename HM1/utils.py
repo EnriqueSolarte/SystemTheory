@@ -36,3 +36,12 @@ def plot(avg_reward, label):
 
     plt.show()
 
+
+def plot_env(env):
+    plt.figure()
+    x = range(1, env.NumofBandits+1)
+    y = env.MeanList
+    plt.errorbar(x=x, y=y, xerr=0.5, yerr=env.sigma, linestyle='None',fmt='o', ecolor='g')
+    plt.title("Environment")
+    plt.show()
+

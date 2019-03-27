@@ -14,7 +14,7 @@ import numpy as np
 # import others
 from env import Gaussian_MAB, Bernoulli_MAB
 from algo import EpislonGreedy, UCB, Gradient
-from utils import plot
+from utils import *
 
 # function map
 FUNCTION_MAP = {'e-Greedy': EpislonGreedy,
@@ -34,6 +34,7 @@ def train(args, env, algo):
     for _ in range(args.num_exp):
         # start with new environment and policy
         mab = env(args.num_of_bandits)
+        # plot_env(mab)
         agent = algo(args.num_of_bandits, parameter)
         for t in range(args.max_timestep):
             # choose action first
@@ -57,29 +58,50 @@ if __name__ == '__main__':
     parser.add_argument("-nb", "--num_of_bandits", type=int,
                         default=50, help="number of bandits")
     parser.add_argument("-algo", "--algo",
-                        default="grad", choices=FUNCTION_MAP.keys(),
+                        default="UCB", choices=FUNCTION_MAP.keys(),
                         help="Algorithm to use")
     parser.add_argument("-epislon", "--epislon", type=float,
-                        default=0.4, help="epislon for epislon-greedy algorithm")
+                        default=0, help="epislon for epislon-greedy algorithm")
     parser.add_argument("-c", "--c", type=float,
-                        default=1, help="c for UCB")
+                        default=0, help="c for UCB")
     parser.add_argument("-max_timestep", "--max_timestep", type=int,
                         default=500, help="Episode")
     parser.add_argument("-num_exp", "--num_exp", type=int,
                         default=100, help="Total experiments to run")
     parser.add_argument("-plot", "--plot", action='store_true',
-                        default=False, help='plot the results')
+                        default=True, help='plot the results')
     parser.add_argument("-runAll", "--runAll", action='store_true',
                         default=True, help='run all three algos')
     args = parser.parse_args()
 
     # start training
+    if args.algo == 'e-Greedy' :
+        eps_all = ['0', '0.01', '0.1', '0.5', '0.99']
+        prs = [0.0, 0.01, 0.1, 0.5, 0.99]
+        avg_reward = np.zeros([len(eps_all), args.max_timestep])
+        for pr in prs:
+            args.epislon = pr
+            idx = prs.index(pr)
+            avg_reward[idx] = train(args, Gaussian_MAB, FUNCTION_MAP[args.algo])
+        plot(avg_reward, eps_all)
+
+    if args.algo == 'UCB':
+        eps_all = ['0', '0.5', '1', '1000']
+        prs = [0.0, 0.5, 1, 1000]
+
+        avg_reward = np.zeros([len(eps_all), args.max_timestep])
+        for pr in prs:
+            args.epislon = pr
+            idx = prs.index(pr)
+            avg_reward[idx] = train(args, Gaussian_MAB, FUNCTION_MAP[args.algo])
+        plot(avg_reward, eps_all)
+
     avg_reward = train(args, Gaussian_MAB, FUNCTION_MAP[args.algo])
     if args.plot:
         plot(np.expand_dims(avg_reward, axis=0), [args.algo])
 
     ##############################################################################
-    # After you implement all the method, uncomment this part, and then you can  #  
+    # After you implement all the method, uncomment this part, and then you can  #
     # use the flag: --runAll to show all the results in a single figure.         #
     ##############################################################################
 
