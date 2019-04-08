@@ -4,19 +4,22 @@ import itertools
 import numpy as np
 from collections import defaultdict
 
+
 def epsilon_greedy_policy(Q, epsilon, num_of_action):
     """
     Description:
         Epsilon-greedy policy based on a given Q-function and epsilon.
         Don't need to modify this :) 
     """
+
     def policy_fn(obs):
         A = np.ones(num_of_action, dtype=float) * epsilon / num_of_action
         best_action = np.argmax(Q[obs])
         A[best_action] += (1.0 - epsilon)
         return A
-    
+
     return policy_fn
+
 
 def q_learning(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
     """
@@ -44,21 +47,34 @@ def q_learning(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
 
     # The policy we're following
     policy = epsilon_greedy_policy(Q, epsilon, env.action_space.n)
-    
+
     # start training
     for i_episode in range(num_episodes):
         # Reset the environment and pick the first action
         state = env.reset()
-
         for t in itertools.count():
-            raise NotImplementedError('Q-learning NOT IMPLEMENTED')
-            ##############################################################################
-            #                                                                            #
-            #                               Your code here                               #
-            #                                                                            #
-            ##############################################################################
-    
+            # Take action from state S and the env environment
+            action_probs = policy(state)
+            action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+            next_state, reward, done, _ = env.step(action)
+
+            # Update rewards
+            episode_rewards[i_episode] += reward
+            episode_lengths[i_episode] = t
+
+            # Dynamic Update
+            best_next_action_idx = np.argmax(Q[next_state])
+            td_target = reward + discount_factor * Q[next_state][best_next_action_idx]
+            td_delta = td_target - Q[state][action]
+            Q[state][action] += alpha * td_delta
+
+            if done:
+                break
+
+            state = next_state
+
     return Q, episode_rewards, episode_lengths
+
 
 def sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
     """
@@ -93,11 +109,26 @@ def sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
         action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
 
         for t in itertools.count():
-            raise NotImplementedError('SARSA NOT IMPLEMENTED')
-            ##############################################################################
-            #                                                                            #
-            #                               Your code here                               #
-            #                                                                            #
-            ##############################################################################
+            # Take action from state S and the env environment
+            next_state, reward, done, _ = env.step(action)
+
+            # Next action
+            n_act_probs = policy(next_state)
+            n_act_idx = np.random.choice(np.arange(len(n_act_probs)), p=n_act_probs)
+
+            # Update rewards
+            episode_rewards[i_episode] += reward
+            episode_lengths[i_episode] = t
+
+            # TD Update
+            td_target = reward + discount_factor * Q[next_state][n_act_idx]
+            td_delta = td_target - Q[state][action]
+            Q[state][action] += alpha * td_delta
+
+            if done:
+                break
+
+            action = n_act_idx
+            state = next_state
 
     return Q, episode_rewards, episode_lengths

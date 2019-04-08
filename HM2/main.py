@@ -7,11 +7,12 @@ import itertools
 # import ours 
 from env import CliffWalkingEnv
 from algo import q_learning, sarsa
-from utils import plot
+from utils import *
 
 # define algorithm map
 ALGO_MAP = {'q_learning': q_learning,
             'sarsa': sarsa}
+
 
 def render_trajectory(env, Q):
     """
@@ -23,40 +24,42 @@ def render_trajectory(env, Q):
     for t in itertools.count():
         action = np.argmax(Q[state])
         next_state, reward, done, _ = env.step(action)
+        print([state, next_state])
         env.render()
         if done:
             break
         state = next_state
 
+
 if __name__ == '__main__':
-    
+
     # define argument parser
     parser = argparse.ArgumentParser()
-    parser.add_argument("-algo", "--algo", default='q_learning', 
+    parser.add_argument("-algo", "--algo", default='sarsa',
                         choices=ALGO_MAP.keys(),
                         help="algorithm to use")
     parser.add_argument("-episode", "--episode", default=500,
                         help="Training episode")
-    parser.add_argument("-render", "--render", action='store_true',
+    parser.add_argument("-render", "--render", action='store_true', default=False,
                         help="visualize the result of an algorithm")
-    parser.add_argument("-runAll", "--runAll", action='store_true', 
+    parser.add_argument("-runAll", "--runAll", action='store_true', default=True,
                         help="run all algorithms")
     args = parser.parse_args()
 
     # initial environment object
     env = CliffWalkingEnv()
 
-    # start training
-    Q, epi_reward, epi_length = ALGO_MAP[args.algo](env, args.episode)
-    # NOTE: you can also use your own plotting function
-    plot(np.expand_dims(epi_reward, axis=0), [args.algo])
+    # # start training
+    # Q, epi_reward, epi_length = ALGO_MAP[args.algo](env, args.episode)
+    # # NOTE: you can also use your own plotting function
+    # plot(np.expand_dims(epi_reward, axis=0), [args.algo])
 
     # if you want to render the result...
     if args.render:
         render_trajectory(env, Q)
 
     # Un-comment this part if you finish all algorithm
-    """    
+
     if args.runAll:
         # run all the algorithms
         label = ['q_learning', 'sarsa']
@@ -64,8 +67,10 @@ if __name__ == '__main__':
         _gather_l = np.zeros([len(label), args.episode])
         for alg in label:
             idx = label.index(alg)
-            Q, epi_reward, epi_length = ALGO_MAP[alg](env, args.episode)
+            Q, epi_reward, epi_length = ALGO_MAP[alg](env, args.episode, alpha=0.1)
+            print("render cliff-walking env for []".format(alg))
+            my_render_trajectory(env, Q, idx, ['Q-learning', 'SARSA'])
             _gather_r[idx] = epi_reward
             _gather_l[idx] = epi_length
         plot(_gather_r, ['Q-learning', 'SARSA'])
-    """
+        plot(_gather_l, ['Q-learning', 'SARSA'], yxis_label="Episode Length")
