@@ -28,8 +28,8 @@ if __name__ == '__main__':
 
     for run in range(args.runs):
         for index, plan_step in zip(range(len(plan_steps)), plan_steps):
-            args.planning_steps = plan_step
-            
+            # args.planning_steps = plan_step
+            args.plan_step = plan_step
             # initialize Q table
             q_value = np.zeros(env.q_size)
             # generate Dyna-Q model
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # plotting here
     for i in range(len(plan_steps)):
         plt.plot(steps[i, :], label='%d steps planning ahead' % (plan_steps[i]))
-    plt.title('Figure 8.2')
+    plt.title('Dyna Q')
     plt.xlabel('episodes')
     plt.ylabel('steps per episode')
     plt.legend()

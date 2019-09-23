@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import gym
+from plotting import *
 
 env = gym.make('CartPole-v1')
 env = env.unwrapped
@@ -11,7 +12,7 @@ state_size = env.observation_space.shape[0]
 action_size = env.action_space.n
 
 ## TRAINING Hyperparameters
-max_episodes = 10000
+max_episodes = 2000
 learning_rate = 0.01
 gamma = 0.95
 
@@ -71,7 +72,7 @@ episode_states, episode_actions, episode_rewards = [], [], []
 mean_reward = 0
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-
+    saved_rewards = []
     for episode in range(max_episodes):
 
         episode_rewards_sum = 0
@@ -101,9 +102,10 @@ with tf.Session() as sess:
 
             episode_rewards.append(reward)
 
-            if mean_reward > 200:
-                env.render()
-
+            # if mean_reward > 200:
+            #     env.render()
+            saved_rewards.append(reward)
+            save_obj("Policy_gradient", saved_rewards, verbose=False)
             if done:
                 # Calculate sum reward
                 episode_rewards_sum = np.sum(episode_rewards)

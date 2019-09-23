@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
-import matplotlib.pyplot as plt
 import gym
+from plotting import *
 
 
 class CartPole:
@@ -149,7 +149,7 @@ if __name__ == '__main__':
                         help="Max. number of steps")
     parser.add_argument("-render", "--render", action='store_true', default=False,
                         help="visualize the result of an algorithm")
-
+    parser.add_argument("-trials", "--trials", default=100)
     args = parser.parse_args()
 
     cPole = CartPole()
@@ -158,7 +158,8 @@ if __name__ == '__main__':
                           gamma=0.9,
                           epsilon=0.1,
                           env=cPole)
-    episodes, steps, rewards = algorithm.run(args=args)
-    plt.plot(episodes, rewards)
-    plt.show()
+    # episodes, steps, rewards = algorithm.run(args=args)
+    # save_obj("Q_learning_results", [episodes, steps, rewards])
+    episodes, steps, rewards = load_obj("Q_learning_results")
+    plot(episodes, rewards, steps)
     print("end")

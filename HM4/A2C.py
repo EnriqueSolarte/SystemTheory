@@ -5,6 +5,7 @@ import numpy as np
 from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
+from plotting import *
 
 number_of_episodes = 1000
 
@@ -92,7 +93,7 @@ if __name__ == "__main__":
     agent = A2C(state_size, action_size)
 
     scores, episodes = [], []
-
+    saved_rewards = []
     for episode in range(number_of_episodes):
         done = False
         score = 0
@@ -100,8 +101,8 @@ if __name__ == "__main__":
         state = np.reshape(state, [1, state_size])
 
         while not done:
-            if agent.render:
-                env.render()
+            # if agent.render:
+            #     env.render()
 
             action = agent.get_action(state)
             next_state, reward, done, info = env.step(action)
@@ -113,7 +114,8 @@ if __name__ == "__main__":
 
             score += reward
             state = next_state
-
+            saved_rewards.append(score)
+            save_obj("A2C", saved_rewards, verbose=False)
             if done:
                 # every episode, plot the play time
                 score = score if score == 500.0 else score + 100
